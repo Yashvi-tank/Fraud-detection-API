@@ -68,6 +68,14 @@ from app.services.fraud_engine import (
                 "Unrecognized device",
             ],
         ),
+        (
+            500.0,
+            "france",
+            "new_device_001",
+            20,
+            STATUS_SAFE,
+            ["Unrecognized device"],
+        ),
     ],
 )
 def test_evaluate_transaction(

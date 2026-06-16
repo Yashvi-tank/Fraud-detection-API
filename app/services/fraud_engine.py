@@ -57,6 +57,10 @@ def evaluate_transaction(
       31-60  -> REVIEW
       61+    -> SUSPICIOUS
     """
+    normalized_country = country.strip().casefold()
+    normalized_domestic_country = DOMESTIC_COUNTRY.casefold()
+    normalized_device_id = device_id.strip().upper()
+
     risk_score = 0
     reasons: list[str] = []
 
@@ -64,11 +68,11 @@ def evaluate_transaction(
         risk_score += HIGH_AMOUNT_SCORE
         reasons.append("High transaction amount")
 
-    if country != DOMESTIC_COUNTRY:
+    if normalized_country != normalized_domestic_country:
         risk_score += FOREIGN_COUNTRY_SCORE
         reasons.append("Foreign transaction detected")
 
-    if device_id.startswith("NEW"):
+    if normalized_device_id.startswith("NEW"):
         risk_score += UNRECOGNIZED_DEVICE_SCORE
         reasons.append("Unrecognized device")
 

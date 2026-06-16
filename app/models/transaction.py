@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Column, JSON
+from sqlalchemy import Column, DateTime, JSON
 from sqlmodel import Field, SQLModel
 
 
@@ -26,8 +26,7 @@ class Transaction(SQLModel, table=True):
     )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),
-        nullable=False,
-        index=True,
+        sa_column=Column(DateTime(timezone=True), nullable=False, index=True),
     )
 
     def reasons_as_list(self) -> list[str]:

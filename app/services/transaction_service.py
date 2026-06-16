@@ -3,6 +3,7 @@
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, select
 
 from app.models.transaction import Transaction
@@ -39,8 +40,15 @@ class TransactionService:
         )
 
         self.session.add(transaction)
-        self.session.commit()
-        self.session.refresh(transaction)
+        try:
+            self.session.commit()
+            self.session.refresh(transaction)
+        except SQLAlchemyError as exc:
+            self.session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to persist transaction",
+            ) from exc
 
         return TransactionCheckResponse(
             transaction_id=transaction.id,

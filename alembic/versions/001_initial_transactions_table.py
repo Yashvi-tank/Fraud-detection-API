@@ -30,7 +30,8 @@ def upgrade() -> None:
         sa.Column("risk_score", sa.Integer(), nullable=False),
         sa.Column("status", sa.String(), nullable=False),
         sa.Column("reasons", sa.JSON(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.CheckConstraint("amount > 0", name="ck_transactions_amount_positive"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(

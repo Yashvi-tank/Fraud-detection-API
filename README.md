@@ -69,9 +69,14 @@ fraud-detection-api/
 │       ├── test_fraud_engine.py
 │       └── test_api.py
 ├── alembic/                     # Database migrations
+├── docker/
+│   └── entrypoint.sh            # Wait for DB, run migrations, start API
+├── Dockerfile
+├── docker-compose.yml
 ├── alembic.ini
 ├── requirements.txt
 ├── .env.example
+├── .dockerignore
 └── README.md
 ```
 
@@ -79,8 +84,9 @@ fraud-detection-api/
 
 ### Prerequisites
 
-- Python 3.12+
-- PostgreSQL 14+
+- Python 3.12+ (for non-Docker local mode)
+- PostgreSQL 14+ (for non-Docker local mode)
+- Docker Desktop (recommended local mode)
 
 ### Setup
 
@@ -133,6 +139,36 @@ alembic upgrade head
 Copy `.env.example` to `.env` and adjust values for your environment.
 
 ## Running Locally
+
+### Docker (Recommended)
+
+This starts both FastAPI and PostgreSQL, waits for DB readiness, runs Alembic migrations automatically, then starts the API.
+
+```bash
+# From project root
+docker compose up --build
+```
+
+Access:
+
+- **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+Notes:
+
+- API container uses Docker networking and connects to DB host `db` (not `localhost`).
+- PostgreSQL data is persisted in the `postgres_data` Docker volume.
+- To stop and remove containers:
+
+```bash
+docker compose down
+```
+
+To also remove the database volume:
+
+```bash
+docker compose down -v
+```
 
 Start the development server:
 
