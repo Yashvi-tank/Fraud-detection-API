@@ -24,6 +24,8 @@ class Transaction(SQLModel, table=True):
         default_factory=list,
         sa_column=Column(JSON, nullable=False),
     )
+    fraud_probability: float | None = Field(default=None, nullable=True)
+    model_version: str | None = Field(default=None, nullable=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),
         sa_column=Column(DateTime(timezone=True), nullable=False, index=True),

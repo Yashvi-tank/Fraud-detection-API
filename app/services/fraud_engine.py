@@ -83,3 +83,62 @@ def evaluate_transaction(
         status=status,
         reasons=reasons,
     )
+
+
+def aggregate_fraud_evaluations(
+    *evaluations: FraudEvaluationResult,
+) -> FraudEvaluationResult:
+    """Combine multiple fraud evaluation results into a single assessment."""
+    total_score = sum(evaluation.risk_score for evaluation in evaluations)
+    reasons: list[str] = []
+    seen_reasons: set[str] = set()
+
+    for evaluation in evaluations:
+        for reason in evaluation.reasons:
+            if reason not in seen_reasons:
+                seen_reasons.add(reason)
+                reasons.append(reason)
+
+    return FraudEvaluationResult(
+        risk_score=total_score,
+        status=_classify_risk(total_score),
+        reasons=reasons,
+    )
+
+
+def apply_ml_boost(
+    evaluation: FraudEvaluationResult,
+    ml_probability: float,
+    ml_weight: int = 20,
+) -> FraudEvaluationResult:
+    """Add ML fraud probability contribution to the risk score.
+
+    Formula::
+
+        final_score = min(100, rule_score + round(ml_probability * ml_weight))
+
+    The total risk score is **capped at 100**.
+
+    Parameters
+    ----------
+    evaluation:
+        The aggregated static + behavioral evaluation result.
+    ml_probability:
+        Fraud probability from the ML model (0.0 – 1.0).
+    ml_weight:
+        Maximum points the ML layer can contribute (default 20).
+    """
+    ml_score = round(ml_probability * ml_weight)
+    new_score = min(100, evaluation.risk_score + ml_score)
+    reasons = list(evaluation.reasons)
+
+    if ml_probability >= 0.5:
+        reasons.append(
+            f"ML model flagged as suspicious (probability: {ml_probability:.2f})"
+        )
+
+    return FraudEvaluationResult(
+        risk_score=new_score,
+        status=_classify_risk(new_score),
+        reasons=reasons,
+    )

@@ -9,7 +9,10 @@ from app.core.database import get_session
 from app.schemas.transaction import (
     TransactionCheckRequest,
     TransactionCheckResponse,
+    TransactionListQuery,
+    TransactionListResponse,
     TransactionResponse,
+    to_transaction_response,
 )
 from app.services.transaction_service import TransactionService
 
@@ -42,30 +45,35 @@ def check_transaction(
 
 @router.get(
     "",
-    response_model=list[TransactionResponse],
-    summary="List all transactions",
-    description="Return every stored transaction ordered by most recent first.",
+    response_model=TransactionListResponse,
+    summary="List transactions",
+    description=(
+        "Return a paginated list of transactions with optional filters and sorting. "
+        "Defaults to sorting by created_at descending."
+    ),
 )
 def list_transactions(
+    query: TransactionListQuery = Depends(),
     service: TransactionService = Depends(get_transaction_service),
-) -> list[TransactionResponse]:
-    """Return all stored transactions."""
-    transactions = service.list_transactions()
-    return [
-        TransactionResponse(
-            id=transaction.id,
-            user_id=transaction.user_id,
-            amount=transaction.amount,
-            merchant=transaction.merchant,
-            country=transaction.country,
-            device_id=transaction.device_id,
-            risk_score=transaction.risk_score,
-            status=transaction.status,
-            reasons=transaction.reasons_as_list(),
-            created_at=transaction.created_at,
-        )
-        for transaction in transactions
-    ]
+) -> TransactionListResponse:
+    """Return paginated, filterable transaction results."""
+    result = service.list_transactions(
+        page=query.page,
+        page_size=query.page_size,
+        status=query.status,
+        user_id=query.user_id,
+        country=query.country,
+        merchant=query.merchant,
+        sort_by=query.sort_by,
+        sort_order=query.sort_order,
+    )
+    return TransactionListResponse(
+        items=[to_transaction_response(transaction) for transaction in result.items],
+        total=result.total,
+        page=result.page,
+        page_size=result.page_size,
+        total_pages=result.total_pages,
+    )
 
 
 @router.get(
@@ -80,15 +88,4 @@ def get_transaction(
 ) -> TransactionResponse:
     """Return one transaction by identifier."""
     transaction = service.get_transaction(transaction_id)
-    return TransactionResponse(
-        id=transaction.id,
-        user_id=transaction.user_id,
-        amount=transaction.amount,
-        merchant=transaction.merchant,
-        country=transaction.country,
-        device_id=transaction.device_id,
-        risk_score=transaction.risk_score,
-        status=transaction.status,
-        reasons=transaction.reasons_as_list(),
-        created_at=transaction.created_at,
-    )
+    return to_transaction_response(transaction)

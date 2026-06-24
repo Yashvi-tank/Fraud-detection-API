@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from app.api.transactions import router as transactions_router
 from app.core.config import settings
 from app.core.database import init_db
+from app.utils.logging import setup_logging
 
 
 class HealthResponse(BaseModel):
@@ -20,6 +21,7 @@ class HealthResponse(BaseModel):
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     """Initialize resources on startup and clean up on shutdown."""
+    setup_logging(debug=settings.DEBUG)
     init_db()
     yield
 

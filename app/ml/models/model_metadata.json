@@ -1,0 +1,34 @@
+{
+  "model_version": "v1",
+  "model_type": "RandomForestClassifier",
+  "feature_names": [
+    "amount",
+    "country_encoded",
+    "device_new",
+    "velocity_short",
+    "velocity_long",
+    "country_anomaly",
+    "spending_anomaly",
+    "merchant_encoded",
+    "risk_score_rules"
+  ],
+  "n_estimators": 100,
+  "max_depth": 12,
+  "dataset_size": 5500,
+  "train_size": 4400,
+  "test_size": 1100,
+  "metrics": {
+    "random_forest": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0
+    },
+    "logistic_regression": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0
+    }
+  }
+}

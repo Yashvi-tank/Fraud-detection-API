@@ -44,3 +44,7 @@ htmlcov/
 *.swp
 .DS_Store
 Thumbs.db
+
+# ML artifacts (Phase 3)
+app/ml/data/
+app/ml/models/*.joblib

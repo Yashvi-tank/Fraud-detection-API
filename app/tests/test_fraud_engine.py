@@ -92,3 +92,49 @@ def test_evaluate_transaction(
     assert result.risk_score == expected_score
     assert result.status == expected_status
     assert result.reasons == expected_reasons
+
+
+def test_aggregate_fraud_evaluations_combines_scores_and_reasons() -> None:
+    """Aggregated evaluations should sum scores and preserve reason order."""
+    from app.services.fraud_engine import FraudEvaluationResult, aggregate_fraud_evaluations
+
+    static = FraudEvaluationResult(
+        risk_score=30,
+        status="SAFE",
+        reasons=["High transaction amount"],
+    )
+    behavioral = FraudEvaluationResult(
+        risk_score=35,
+        status="",
+        reasons=["High transaction velocity detected", "New device detected"],
+    )
+
+    result = aggregate_fraud_evaluations(static, behavioral)
+
+    assert result.risk_score == 65
+    assert result.status == "SUSPICIOUS"
+    assert result.reasons == [
+        "High transaction amount",
+        "High transaction velocity detected",
+        "New device detected",
+    ]
+
+
+def test_aggregate_fraud_evaluations_deduplicates_reasons() -> None:
+    """Duplicate reasons should not appear twice in the aggregated result."""
+    from app.services.fraud_engine import FraudEvaluationResult, aggregate_fraud_evaluations
+
+    first = FraudEvaluationResult(
+        risk_score=10,
+        status="SAFE",
+        reasons=["Duplicate reason"],
+    )
+    second = FraudEvaluationResult(
+        risk_score=10,
+        status="SAFE",
+        reasons=["Duplicate reason", "Unique reason"],
+    )
+
+    result = aggregate_fraud_evaluations(first, second)
+
+    assert result.reasons == ["Duplicate reason", "Unique reason"]
