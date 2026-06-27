@@ -28,6 +28,16 @@ def client_fixture() -> Generator[TestClient, None, None]:
 
     app.dependency_overrides[get_session] = get_test_session
 
+    from uuid import uuid4
+    from app.core.security import get_current_user
+    from app.models.user import User
+
+    app.dependency_overrides[get_current_user] = lambda: User(
+        id=uuid4(),
+        username="test_user",
+        hashed_password="",
+    )
+
     from app.ml.prediction_service import MLPredictionResult
     mock_predictor = MagicMock()
     mock_predictor.predict.return_value = MLPredictionResult(

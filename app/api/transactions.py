@@ -15,8 +15,13 @@ from app.schemas.transaction import (
     to_transaction_response,
 )
 from app.services.transaction_service import TransactionService
+from app.core.security import get_current_user
 
-router = APIRouter(prefix="/transactions", tags=["transactions"])
+router = APIRouter(
+    prefix="/transactions",
+    tags=["transactions"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 def get_transaction_service(

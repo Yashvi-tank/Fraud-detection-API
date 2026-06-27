@@ -8,6 +8,7 @@ from sqlmodel import SQLModel
 
 from app.core.config import settings
 from app.models.transaction import Transaction  # noqa: F401
+from app.models.user import User  # noqa: F401
 
 config = context.config
 

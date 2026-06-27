@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     ML_WEIGHT: int = 20
     ML_ENABLED: bool = True
 
+    # Security & Authentication
+    JWT_SECRET_KEY: str = "super_secret_jwt_key_for_dev_change_me_in_prod"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+
 
 @lru_cache
 def get_settings() -> Settings:

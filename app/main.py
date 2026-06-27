@@ -4,9 +4,12 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app.api.transactions import router as transactions_router
+from app.api.auth import router as auth_router
+from app.api.analytics import router as analytics_router
 from app.core.config import settings
 from app.core.database import init_db
 from app.utils.logging import setup_logging
@@ -30,14 +33,22 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description=(
-        "Production-quality fraud detection API with a rule-based engine. "
-        "Designed for future integration with JWT auth, Redis caching, "
-        "device/country tracking, and ML-based prediction."
+        "Production-quality fraud detection API with a hybrid ML + rule-based engine."
     ),
     lifespan=lifespan,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all for convenient portfolio deployment/access
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(transactions_router)
+app.include_router(auth_router)
+app.include_router(analytics_router)
 
 
 @app.get(
